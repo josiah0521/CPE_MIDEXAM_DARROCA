@@ -1,0 +1,124 @@
+
+- name: Downloading the source file of Elasticsearch
+  tags: CentOS-ES
+  get_url:
+    url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.4.3-x86_64.rpm
+    dest: /tmp/elasticsearch-8.4.3-x86_64.rpm
+
+- name: Installing Elasticsearch
+  tags: CentOS-ES
+  yum:
+    name: /tmp/elasticsearch-8.4.3-x86_64.rpm
+    state: present
+
+- name: Enabling Elasticsearch service
+  tags: CentOS-ES
+  service:
+    name: elasticsearch
+    enabled: yes
+
+- name: Service file modification
+  tags: CentOS-ES
+  replace:
+    path: /usr/lib/systemd/system/elasticsearch.service
+    regexp: "TimeoutStartSec=75"
+    replace: "TimeoutStartSec=300"
+
+- name: Elastic Search Port
+  tags: CentOS-ES
+  shell: |
+    sudo firewall-cmd --permanent --zone=public --add-port=9200/tcp
+    sleep 10
+    sudo firewall-cmd --reload
+
+- name: Enabling elastic search service
+  tags: CentOS-ES
+  shell: |
+    systemctl enable elasticsearch.service
+    sleep 10
+    systemctl start elasticsearch.service
+  ignore_errors: yes
+
+
+
+- name: Downloading and installing public signing key
+  tags: Cent-LogS
+  rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: Creeating a repository file for Logstash
+  tags: CentOS-LogS
+  copy:
+    src: logstash.repo
+    dest: /etc/yum.repos.d/logstash.repo
+    owner: root
+    group: root
+    mode: 0777
+
+- name: Updating repository
+  tags: CentOS-LogS
+  yum:
+    update_cache: yes
+
+- name: Installing Logstash and its dependencies
+  tags: CentOS-LogS
+  yum:
+    name:
+      - logstash
+    state: latest
+
+- name: LogStash Port
+  tags: CentOS-LogS, Install-ELK
+  shell: |
+    sudo firewall-cmd --permanent --zone=public --add-port=9600/tcp
+    sleep 10
+    sudo firewall-cmd --reload
+
+- name: Restarting LogStash
+  tags: CentOS-LogS, Service, Service-LogS, Service-ELK
+  service:
+    name: logstash
+    state: restarted
+    enabled: true
+
+
+
+
+- name: Downloading and installing public signing key
+  tags: CentOS-K, Install-K, Install-ELK
+  rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: Addition of Kibana to the RPM repository
+  tags: CentOS-K, Install-K, Install-ELK
+  copy:
+    src: kibana.repo
+    dest: /etc/yum.repos.d/kibana.repo
+    owner: root
+    group: root
+    mode: 777
+
+- name: Kibana Update
+  tags: CentOS-K, Install-K, Install-ELK
+  yum:
+    name:
+      - kibana
+    state: latest
+
+- name: Kibana port
+  tags: CentOS-K, Install-K, Install-ELK
+  firewalld:
+    port: 5601/tcp
+    zone: public
+    permanent: yes
+    state: enabled
+
+- name: Restarting Kibana
+  tags: CentOS-K, Service-ELK, Service-K, Service
+  service:
+    name: kibana
+    state: restarted
+    enabled: true
+

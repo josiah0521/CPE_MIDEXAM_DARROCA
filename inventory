@@ -1,0 +1,29 @@
+[all]
+192.168.56.102 ansible_python_interpreter=/usr/bin/python3
+192.168.56.105 ansible_python_interpreter=/usr/bin/python3
+192.168.56.101 ansible_python_interpreter=/usr/bin/python3
+
+[Ubuntu-ELK]
+192.168.56.102 ansible_python_interpreter=/usr/bin/python3
+192.168.56.101 ansible_python_interpreter=/usr/bin/python3
+
+[Ubuntu-IGP]
+192.168.56.102 ansible_python_interpreter=/usr/bin/python3
+192.168.56.101 ansible_python_interpreter=/usr/bin/python3
+
+[Ubuntu-LS]
+192.168.56.102 ansible_python_interpreter=/usr/bin/python3
+192.168.56.101 ansible_python_interpreter=/usr/bin/python3
+
+
+[CentOS-ELK]
+192.168.56.105 ansible_python_interpreter=/usr/bin/python3
+
+[CentOS-IGP]
+192.168.56.105 ansible_python_interpreter=/usr/bin/python3
+
+[CentOS-LS]
+192.168.56.105 ansible_python_interpreter=/usr/bin/python3
+
+[CentOS-NAGIOS]
+192.168.56.105 ansible_python_interpreter=/usr/bin/python3

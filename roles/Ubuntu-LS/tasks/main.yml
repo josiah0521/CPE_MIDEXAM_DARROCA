@@ -1,0 +1,35 @@
+- name: Depedncies
+  apt:
+    name:
+      - apache2
+      - mysql-server
+      - php
+      - libapache2-mod-php
+      - php-mysql
+      - maria-server
+      - mariadb
+    state: latest
+
+- name: Starting  services
+  service:
+    name: apache2
+    state: started
+    enabled: true
+
+- name: Restarting  services
+  service:
+    name: apache2
+    state: started
+    enabled: true
+
+- name: Mariadb start service
+  service:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Mariadb - Restarting/Enabling
+  service:
+    name: mariadb
+    state: restarted
+    enabled: true

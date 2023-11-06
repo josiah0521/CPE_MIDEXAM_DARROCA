@@ -1,0 +1,112 @@
+- name: Dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - software-properties-common
+      - wget
+    state: latest
+
+
+
+- name: Influxdb will be added to the repository
+  shell: |
+    wget -q https://repos.influxdata.com/influxdb.key
+    sleep 5
+    echo '23a1c8836f0afc5ed24e0486339d7cc8f6790b83886c4c96995b88a061c5bb5d influxdb.key' | sha256sum -c && cat influxdb.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdb.gpg > /dev/null
+    sleep 5
+    echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdb.gpg] https://repos.influxdata.com/debian stable main' | sudo tee /etc/apt/sources.list.d/influxdata.list
+
+- name: Installing Influxdb
+  apt:
+    name:
+      - influxdb
+
+- name: Enabling and Starting Influxdb
+  service:
+    name: influxdb
+    state: started
+    enabled: true
+
+
+
+- name: Adding Grafana Repository
+  shell: |
+    sudo wget -q -O /usr/share/keyrings/grafana.key https://packages.grafana.com/gpg.key
+
+- name: Update repository
+  shell: |
+    sudo apt-get update
+
+- name: Updating the repository and isntall Grafana
+  apt:
+    name:
+      - grafana
+
+- name: Reloading daemon
+  shell: |
+    sudo systemctl daemon-reload
+
+- name: Enabling and Starting of Grafana
+  service:
+    name: grafana-server
+    state: started
+    enabled: true
+
+- name: Restarting of Grafana
+  service:
+    name: grafana-server
+    state: restarted
+    enabled: true
+
+
+
+
+- name: Directory (where the downloaded files will be stored)
+  tags: DIR
+  file:
+    path: ~/prometheus
+    state: directory
+
+- name: Download and extraction of Prometheus
+  tags: SRC
+  unarchive:
+    src: https://github.com/prometheus/prometheus/releases/download/v2.39.1/prometheus-2.39.1.linux-amd64.tar.gz
+    dest: ~/prometheus
+    remote_src: yes
+    mode: 0777
+    owner: root
+    group: root
+
+- name: Stopping the Prometheus service
+  shell: |
+    sudo systemctl stop prometheus >> /dev/null
+  ignore_errors: yes
+
+- name: Adding the Prometheus executables to a PATH
+  tags: Executables
+  shell: |
+    cd ~/prometheus/prometheus*
+    cp -r . /usr/local/bin/prometheus
+
+- name: Copying the Prometheus service file
+  tags: Servicefile
+  copy:
+    src: prometheus.service
+    dest: /etc/systemd/system/
+    owner: root
+    group: root
+    mode: 777
+
+- name: Enabling and Starting of Prometheus
+  tags: Serviceon
+  service:
+    name: prometheus
+    state: started
+    enabled: true
+
+- name: Restarting of Prometheus
+  tags: Servicerestart
+  service:
+    name: prometheus
+    state: restarted
+    enabled: true
